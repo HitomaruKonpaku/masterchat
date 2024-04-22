@@ -57,7 +57,7 @@ export class StreamPool extends EventEmitter {
     fn: (agent: Masterchat, videoId: string, index: number) => void
   ) {
     return Promise.allSettled(
-      this.entries.map(([videoId, instance], i) =>
+      this.entries.map(([videoId, instance]: any, i) =>
         Promise.resolve(fn(instance, videoId, i))
       )
     );
