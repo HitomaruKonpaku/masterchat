@@ -38,4 +38,9 @@ export interface Credentials {
    * Delegated session id for brand account
    */
   DELEGATED_SESSION_ID?: string;
+
+  "__Secure-1PAPISID"?: string;
+  "__Secure-1PSID"?: string;
+  "__Secure-1PSIDTS"?: string;
+  "__Secure-1PSIDCC"?: string;
 }

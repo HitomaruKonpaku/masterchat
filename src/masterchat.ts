@@ -202,17 +202,19 @@ export class Masterchat extends EventEmitter {
       input = Constants.DO + input;
     }
 
+    const headers = {
+      "Content-Type": "application/json",
+      ...Constants.DH,
+      ...(this.credentials && buildAuthHeaders(this.credentials)),
+      ...config.headers,
+    };
+
     const res = await this.axiosInstance.request<T>({
       ...config,
       url: input,
       signal: this.listenerAbortion.signal,
       method: "POST",
-      headers: {
-        ...config.headers,
-        "Content-Type": "application/json",
-        ...(this.credentials && buildAuthHeaders(this.credentials)),
-        ...Constants.DH,
-      },
+      headers,
       data: body,
     });
 
@@ -227,15 +229,17 @@ export class Masterchat extends EventEmitter {
       input = Constants.DO + input;
     }
 
+    const headers = {
+      ...Constants.DH,
+      ...(this.credentials && buildAuthHeaders(this.credentials)),
+      ...config.headers,
+    };
+
     const res = await this.axiosInstance.request<T>({
       ...config,
       url: input,
       signal: this.listenerAbortion.signal,
-      headers: {
-        ...config.headers,
-        ...(this.credentials && buildAuthHeaders(this.credentials)),
-        ...Constants.DH,
-      },
+      headers,
     });
 
     return res.data;
