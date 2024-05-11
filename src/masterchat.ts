@@ -146,6 +146,7 @@ export class Masterchat extends EventEmitter {
   public isMembersOnly?: boolean;
   public channelName?: string;
   public title?: string;
+  public videoMetadata?: Record<string, any>;
 
   private axiosInstance: AxiosInstance;
   private listener: ChatListener | null = null;
@@ -439,6 +440,7 @@ export class Masterchat extends EventEmitter {
     this.channelName = metadata.channelName;
     this.isLive ??= metadata.isLive;
     this.isMembersOnly ??= metadata.isMembersOnly;
+    this.videoMetadata ??= metadata.metadata;
   }
 
   public async fetchMetadataFromWatch(id: string) {
@@ -471,6 +473,8 @@ export class Masterchat extends EventEmitter {
       channelName: this.channelName,
       title: this.title,
       isLive: this.isLive,
+      isMembersOnly: this.isMembersOnly,
+      videoMetadata: this.videoMetadata,
     };
   }
 

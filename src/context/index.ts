@@ -139,6 +139,7 @@ export function parseMetadataFromWatch(html: string) {
     channelName,
     isLive,
     isMembersOnly,
+    metadata,
   };
 }
 
