@@ -152,7 +152,7 @@ export class Masterchat extends EventEmitter {
   private listener: ChatListener | null = null;
   private listenerAbortion: AbortController = new AbortController();
 
-  private credentials?: Credentials;
+  protected credentials?: Credentials;
 
   /*
    * Private API
@@ -438,9 +438,9 @@ export class Masterchat extends EventEmitter {
     this.title = metadata.title;
     this.channelId = metadata.channelId;
     this.channelName = metadata.channelName;
-    this.isLive ??= metadata.isLive;
-    this.isMembersOnly ??= metadata.isMembersOnly;
-    this.videoMetadata ??= metadata.metadata;
+    this.isLive = metadata.isLive;
+    this.isMembersOnly = metadata.isMembersOnly;
+    this.videoMetadata = metadata.metadata;
   }
 
   public async fetchMetadataFromWatch(id: string) {
