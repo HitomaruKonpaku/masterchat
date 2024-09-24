@@ -126,7 +126,7 @@ export function parseMetadataFromWatch(html: string) {
   const channelId = videoOwner.navigationEndpoint.browseEndpoint.browseId;
   const channelName = runsToString(videoOwner.title.runs);
   const metadata = parseVideoMetadataFromHtml(html);
-  const isLive = !metadata?.publication?.endDate ?? false;
+  const isLive = !metadata?.publication?.endDate || false;
   const isMembersOnly =
     primaryInfo.badges?.some?.(
       (v) =>
