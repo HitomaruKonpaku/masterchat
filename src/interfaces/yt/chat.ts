@@ -501,7 +501,7 @@ export interface YTLiveChatPollRenderer {
   liveChatPollId: string;
   header: {
     pollHeaderRenderer: {
-      pollQuestion?: YTSimpleTextContainer;
+      pollQuestion?: Partial<YTSimpleTextContainer & YTRunContainer>;
       thumbnail: YTThumbnailList;
       metadataText: YTRunContainer<YTTextRun>;
       liveChatPollType: YTLiveChatPollType;
