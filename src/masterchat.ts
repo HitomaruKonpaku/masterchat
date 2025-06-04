@@ -158,7 +158,7 @@ export class Masterchat extends EventEmitter {
    * Private API
    */
 
-  private async postWithRetry<T>(
+  protected async postWithRetry<T>(
     input: string,
     body: any,
     options?: RetryOptions
@@ -194,7 +194,7 @@ export class Masterchat extends EventEmitter {
     }
   }
 
-  private async post<T>(
+  protected async post<T>(
     input: string,
     body: any,
     config: AxiosRequestConfig = {}
@@ -222,7 +222,7 @@ export class Masterchat extends EventEmitter {
     return res.data;
   }
 
-  private async get<T>(
+  protected async get<T>(
     input: string,
     config: AxiosRequestConfig = {}
   ): Promise<T> {
