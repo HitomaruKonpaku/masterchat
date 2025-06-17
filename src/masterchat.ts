@@ -23,6 +23,7 @@ import {
   ChatResponse,
   Credentials,
   RenderingPriority,
+  VideoObject,
   YTCommentThreadRenderer,
   YTContinuationItem,
 } from "./interfaces";
@@ -146,7 +147,7 @@ export class Masterchat extends EventEmitter {
   public isMembersOnly?: boolean;
   public channelName?: string;
   public title?: string;
-  public videoMetadata?: Record<string, any>;
+  public videoMetadata?: VideoObject;
 
   private axiosInstance: AxiosInstance;
   private listener: ChatListener | null = null;
