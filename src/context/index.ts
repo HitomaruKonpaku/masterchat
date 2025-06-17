@@ -177,7 +177,12 @@ function parseVideoMetadataFromElement(
     }
 
     if (child.children.length) {
-      meta[key] = parseVideoMetadataFromElement(child);
+      const value = parseVideoMetadataFromElement(child);
+      if (meta[key]) {
+        meta[key] = [meta[key], value];
+      } else {
+        meta[key] = value;
+      }
       return;
     }
 
@@ -195,12 +200,13 @@ function parseVideoMetaValueByKey(key: string, value: string) {
   switch (key) {
     case "paid":
     case "unlisted":
+    case "requiresSubscription":
     case "isFamilyFriendly":
-    case "interactionCount":
     case "isLiveBroadcast":
       return /true/i.test(value);
     case "width":
     case "height":
+    case "userInteractionCount":
       return Number(value);
   }
   return value;

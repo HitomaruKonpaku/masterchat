@@ -9,9 +9,14 @@ export interface Thumbnail {
   height: number;
 }
 
+export interface InteractionCounter {
+  interactionType: string;
+  userInteractionCount: number;
+}
+
 export interface PublicationEvent {
   isLiveBroadcast: boolean;
-  startDate: string;
+  startDate?: string;
   endDate?: string;
 }
 
@@ -19,6 +24,7 @@ export interface VideoObject {
   url: string;
   name: string;
   description: string;
+  requiresSubscription: boolean;
   identifier: string;
   duration: string;
   author: Person;
@@ -30,6 +36,8 @@ export interface VideoObject {
   height: number;
   isFamilyFriendly: boolean;
   regionsAllowed: string;
+  interactionStatistic?: InteractionCounter | InteractionCounter[];
+  keywords?: string;
   datePublished: string;
   uploadDate: string;
   genre?: string;
