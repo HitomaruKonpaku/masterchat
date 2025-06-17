@@ -11,6 +11,7 @@ import {
   YTInitialData,
   YTPlayabilityStatus,
 } from "../interfaces/yt/context";
+import { VideoObject } from "../interfaces/yt/metadata";
 
 // OK duration=">0" => Archived (replay chat may be available)
 // OK duration="0" => Live (chat may be available)
@@ -109,6 +110,7 @@ export async function parseMetadataFromEmbed(html: string) {
 }
 
 export function parseMetadataFromWatch(html: string) {
+  const metadata = parseVideoMetadataFromHtml(html);
   const initialData = findInitialData(html)!;
 
   const playabilityStatus = findPlayabilityStatus(html);
@@ -118,17 +120,26 @@ export function parseMetadataFromWatch(html: string) {
   const results =
     initialData.contents?.twoColumnWatchNextResults?.results.results!;
 
-  const primaryInfo = results.contents[0].videoPrimaryInfoRenderer;
-  const videoOwner =
-    results.contents[1].videoSecondaryInfoRenderer.owner.videoOwnerRenderer;
+  const primaryInfo = results.contents.find(
+    (v) => v.videoPrimaryInfoRenderer
+  )?.videoPrimaryInfoRenderer;
+  const secondaryInfo = results.contents.find(
+    (v) => v.videoSecondaryInfoRenderer
+  )?.videoSecondaryInfoRenderer;
+  const videoOwner = secondaryInfo?.owner?.videoOwnerRenderer;
+  const badges = primaryInfo?.badges || [];
 
-  const title = runsToString(primaryInfo.title.runs);
-  const channelId = videoOwner.navigationEndpoint.browseEndpoint.browseId;
-  const channelName = runsToString(videoOwner.title.runs);
-  const metadata = parseVideoMetadataFromHtml(html);
+  const channelId = videoOwner?.navigationEndpoint?.browseEndpoint?.browseId;
+  if (!channelId) {
+    throw new Error("CHANNEL_ID_NOT_FOUND");
+  }
+
+  const channelName =
+    runsToString(videoOwner?.title?.runs || []) || metadata.author.name;
+  const title = runsToString(primaryInfo?.title?.runs || []) || metadata.name;
   const isLive = !metadata?.publication?.endDate || false;
   const isMembersOnly =
-    primaryInfo.badges?.some?.(
+    badges.some?.(
       (v) =>
         v.metadataBadgeRenderer.style === PurpleStyle.BadgeStyleTypeMembersOnly
     ) ?? false;
@@ -146,11 +157,11 @@ export function parseMetadataFromWatch(html: string) {
 /**
  * @see http://schema.org/VideoObject
  */
-function parseVideoMetadataFromHtml(html: string) {
+function parseVideoMetadataFromHtml(html: string): VideoObject {
   const $ = cheerio.load(html);
   const meta = parseVideoMetadataFromElement(
     $("[itemtype=http://schema.org/VideoObject]")?.[0]
-  );
+  ) as VideoObject;
   return meta;
 }
 

@@ -16,3 +16,4 @@ export { YTAccessibilityData, YTReloadContinuation } from "./context";
 // export * from "./context";
 export * from "./comments";
 // export * from "./transcript";
+export * from "./metadata";
