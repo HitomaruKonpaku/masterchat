@@ -1,8 +1,8 @@
 # Masterchat
 
-[![npm](https://badgen.net/npm/v/masterchat)](https://npmjs.org/package/masterchat)
-[![npm: total downloads](https://badgen.net/npm/dt/masterchat)](https://npmjs.org/package/masterchat)
-[![npm: publish size](https://badgen.net/packagephobia/publish/masterchat)](https://npmjs.org/package/masterchat)
+[![npm](https://badgen.net/npm/v/@hitomaru/masterchat)](https://npmjs.org/package/@hitomaru/masterchat)
+[![npm: total downloads](https://badgen.net/npm/dt/@hitomaru/masterchat)](https://npmjs.org/package/@hitomaru/masterchat)
+[![npm: publish size](https://badgen.net/packagephobia/publish/@hitomaru/masterchat)](https://npmjs.org/package/@hitomaru/masterchat)
 [![typedoc](https://badgen.net/badge/docs/typedoc/purple)](https://holodata.github.io/masterchat/)
 
 Masterchat is the most powerful library for YouTube Live Chat, supporting parsing 20+ actions, video comments and transcripts, as well as sending messages and moderating chats.
@@ -10,11 +10,11 @@ Masterchat is the most powerful library for YouTube Live Chat, supporting parsin
 ## Install
 
 ```
-npm install masterchat
+npm install @hitomaru/masterchat
 ```
 
 ```js
-import { Masterchat, stringify } from "masterchat";
+import { Masterchat, stringify } from "@hitomaru/masterchat";
 
 const mc = await Masterchat.init("oyxvhJW1Cf8");
 
