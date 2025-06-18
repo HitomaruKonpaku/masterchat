@@ -172,7 +172,7 @@ function parseVideoMetadataFromElement(
   root: any,
   meta: Record<string, any> = {}
 ) {
-  root?.children?.forEach((child: cheerio.Element) => {
+  root?.children?.forEach((child: any) => {
     const attributes = child?.attribs;
     const key = attributes?.itemprop;
     if (!key) {
