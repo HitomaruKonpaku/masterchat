@@ -1,5 +1,30 @@
 # Changelog
 
+## v1.2.0
+
+### New
+
+- Add `isUpcoming`
+- Add `isMembersOnly`
+- Add `videoMetadata` following format [VideoObject](./src/interfaces/yt/metadata.ts)
+
+### Improvements
+
+- Add more field on `Credentials` for members-only live stream
+
+  - `__Secure-1PAPISID`
+  - `__Secure-1PSID`
+  - `__Secure-1PSIDTS`
+  - `__Secure-1PSIDCC`
+
+- Error parsing action `parseAction` should not crash
+- Change access modifier of `get`, `post`, `postWithRetry` to `protected`
+
+### Fixes
+
+- Milestone message duration parsing error
+- Question text from `parseShowLiveChatActionPanelAction` realted to poll
+
 ## v1.1.0
 
 ### New
