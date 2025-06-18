@@ -138,6 +138,8 @@ export function parseMetadataFromWatch(html: string) {
     runsToString(videoOwner?.title?.runs || []) || metadata.author.name;
   const title = runsToString(primaryInfo?.title?.runs || []) || metadata.name;
   const isLive = !metadata?.publication?.endDate || false;
+  const isUpcoming =
+    primaryInfo?.dateText?.simpleText?.includes("Scheduled for") || false;
   const isMembersOnly =
     badges.some?.(
       (v) =>
@@ -149,6 +151,7 @@ export function parseMetadataFromWatch(html: string) {
     channelId,
     channelName,
     isLive,
+    isUpcoming,
     isMembersOnly,
     metadata,
   };

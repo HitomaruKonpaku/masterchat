@@ -144,6 +144,7 @@ export class Masterchat extends EventEmitter {
   public channelId!: string;
 
   public isLive?: boolean;
+  public isUpcoming?: boolean;
   public isMembersOnly?: boolean;
   public channelName?: string;
   public title?: string;
@@ -440,6 +441,7 @@ export class Masterchat extends EventEmitter {
     this.channelId = metadata.channelId;
     this.channelName = metadata.channelName;
     this.isLive = metadata.isLive;
+    this.isUpcoming = metadata.isUpcoming;
     this.isMembersOnly = metadata.isMembersOnly;
     this.videoMetadata = metadata.metadata;
   }
@@ -474,6 +476,7 @@ export class Masterchat extends EventEmitter {
       channelName: this.channelName,
       title: this.title,
       isLive: this.isLive,
+      isUpcoming: this.isUpcoming,
       isMembersOnly: this.isMembersOnly,
       videoMetadata: this.videoMetadata,
     };
