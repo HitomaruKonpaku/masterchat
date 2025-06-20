@@ -231,6 +231,7 @@ export interface AddMembershipTickerAction {
   id: string;
   authorChannelId: string;
   authorPhoto: string;
+  membership?: Membership;
   durationSec: number;
   fullDurationSec: number;
   detailText: YTText;
