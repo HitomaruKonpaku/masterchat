@@ -1,9 +1,6 @@
+import { Badges, Membership } from "../interfaces/misc";
+import { YTAuthorBadge } from "../interfaces/yt/chat";
 import { debugLog } from "../utils";
-import {
-  YTAuthorBadge,
-  YTLiveChatTextMessageRenderer,
-} from "../interfaces/yt/chat";
-import { Membership } from "../interfaces/misc";
 
 export function parseMembership(badge: YTAuthorBadge): Membership | undefined {
   const renderer = badge.liveChatAuthorBadgeRenderer;
@@ -24,7 +21,9 @@ export function parseMembership(badge: YTAuthorBadge): Membership | undefined {
   }
 }
 
-export function parseBadges(renderer: YTLiveChatTextMessageRenderer) {
+export function parseBadges(renderer: {
+  authorBadges?: YTAuthorBadge[];
+}): Badges {
   let isVerified = false,
     isOwner = false,
     isModerator = false,
@@ -54,7 +53,6 @@ export function parseBadges(renderer: YTLiveChatTextMessageRenderer) {
             iconType,
             JSON.stringify(renderer)
           );
-          throw new Error("Unrecognized iconType: " + iconType);
       }
     }
   }

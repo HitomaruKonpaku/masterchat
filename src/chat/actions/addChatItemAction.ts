@@ -1,19 +1,24 @@
+import { toUnknownAction } from "..";
 import {
   AddChatItemAction,
   AddMembershipItemAction,
   AddMembershipMilestoneItemAction,
   AddPlaceholderItemAction,
+  AddPollResultAction,
   AddSuperChatItemAction,
   AddSuperStickerItemAction,
   AddViewerEngagementMessageAction,
   LiveChatMode,
-  ModeChangeAction,
-  AddPollResultAction,
   MembershipGiftPurchaseAction,
-  MembershipGiftRedemptionAction,
   MembershipGiftPurchaseTickerContent,
+  MembershipGiftRedemptionAction,
+  ModeChangeAction,
   ModerationMessageAction,
-} from "../../interfaces/actions";
+  YTLiveChatTextMessageRenderer,
+  YTRun,
+  YTRunContainer,
+  YTTextRun,
+} from "../../interfaces";
 import {
   YTAddChatItemAction,
   YTLiveChatMembershipItemRenderer,
@@ -24,11 +29,7 @@ import {
   YTLiveChatPlaceholderItemRenderer,
   YTLiveChatSponsorshipsGiftPurchaseAnnouncementRenderer,
   YTLiveChatSponsorshipsGiftRedemptionAnnouncementRenderer,
-  YTLiveChatTextMessageRenderer,
   YTLiveChatViewerEngagementMessageRenderer,
-  YTRun,
-  YTRunContainer,
-  YTTextRun,
 } from "../../interfaces/yt/chat";
 import {
   debugLog,
@@ -37,64 +38,73 @@ import {
   stringify,
   tsToDate,
 } from "../../utils";
-import { parseBadges, parseMembership } from "../badge";
-import { parseAmountText, parseSuperChat } from "../superchat";
-import { parseColorCode, pickThumbUrl } from "../utils";
+import { parseBadges } from "../badge";
+import { parseSuperChat } from "../superchat";
+import { pickThumbUrl, unitsToNumber } from "../utils";
 
 export function parseAddChatItemAction(payload: YTAddChatItemAction) {
   const { item } = payload;
 
-  if ("liveChatTextMessageRenderer" in item) {
-    // Chat
-    const renderer = item["liveChatTextMessageRenderer"]!;
-    return parseLiveChatTextMessageRenderer(renderer);
-  } else if ("liveChatPaidMessageRenderer" in item) {
-    // Super Chat
-    const renderer = item["liveChatPaidMessageRenderer"]!;
-    return parseLiveChatPaidMessageRenderer(renderer);
-  } else if ("liveChatPaidStickerRenderer" in item) {
-    // Super Sticker
-    const renderer = item["liveChatPaidStickerRenderer"]!;
-    return parseLiveChatPaidStickerRenderer(renderer);
-  } else if ("liveChatMembershipItemRenderer" in item) {
-    // Membership updates
-    const renderer = item["liveChatMembershipItemRenderer"]!;
-    return parseLiveChatMembershipItemRenderer(renderer);
-  } else if ("liveChatViewerEngagementMessageRenderer" in item) {
-    // Engagement message
-    const renderer = item["liveChatViewerEngagementMessageRenderer"]!;
-    return parseLiveChatViewerEngagementMessageRenderer(renderer);
-  } else if ("liveChatPlaceholderItemRenderer" in item) {
-    // Placeholder chat
-    const renderer = item["liveChatPlaceholderItemRenderer"]!;
-    return parseLiveChatPlaceholderItemRenderer(renderer);
-  } else if ("liveChatModeChangeMessageRenderer" in item) {
-    // Mode change message (e.g. toggle members-only)
-    const renderer = item["liveChatModeChangeMessageRenderer"]!;
-    return parseLiveChatModeChangeMessageRenderer(renderer);
-  } else if ("liveChatSponsorshipsGiftPurchaseAnnouncementRenderer" in item) {
-    // Sponsorships gift purchase announcement
-    const renderer =
-      item["liveChatSponsorshipsGiftPurchaseAnnouncementRenderer"];
-    return parseLiveChatSponsorshipsGiftPurchaseAnnouncementRenderer(
-      renderer
-    ) as MembershipGiftPurchaseAction;
-  } else if ("liveChatSponsorshipsGiftRedemptionAnnouncementRenderer" in item) {
-    // Sponsorships gift purchase announcement
-    const renderer =
-      item["liveChatSponsorshipsGiftRedemptionAnnouncementRenderer"];
-    return parseLiveChatSponsorshipsGiftRedemptionAnnouncementRenderer(
-      renderer
+  const parsedAction = (() => {
+    if ("liveChatTextMessageRenderer" in item) {
+      // Chat
+      const renderer = item["liveChatTextMessageRenderer"]!;
+      return parseLiveChatTextMessageRenderer(renderer);
+    } else if ("liveChatPaidMessageRenderer" in item) {
+      // Super Chat
+      const renderer = item["liveChatPaidMessageRenderer"]!;
+      return parseLiveChatPaidMessageRenderer(renderer);
+    } else if ("liveChatPaidStickerRenderer" in item) {
+      // Super Sticker
+      const renderer = item["liveChatPaidStickerRenderer"]!;
+      return parseLiveChatPaidStickerRenderer(renderer);
+    } else if ("liveChatMembershipItemRenderer" in item) {
+      // Membership updates
+      const renderer = item["liveChatMembershipItemRenderer"]!;
+      return parseLiveChatMembershipItemRenderer(renderer);
+    } else if ("liveChatViewerEngagementMessageRenderer" in item) {
+      // Engagement message
+      const renderer = item["liveChatViewerEngagementMessageRenderer"]!;
+      return parseLiveChatViewerEngagementMessageRenderer(renderer);
+    } else if ("liveChatPlaceholderItemRenderer" in item) {
+      // Placeholder chat
+      const renderer = item["liveChatPlaceholderItemRenderer"]!;
+      return parseLiveChatPlaceholderItemRenderer(renderer);
+    } else if ("liveChatModeChangeMessageRenderer" in item) {
+      // Mode change message (e.g. toggle members-only)
+      const renderer = item["liveChatModeChangeMessageRenderer"]!;
+      return parseLiveChatModeChangeMessageRenderer(renderer);
+    } else if ("liveChatSponsorshipsGiftPurchaseAnnouncementRenderer" in item) {
+      // Sponsorships gift purchase announcement
+      const renderer =
+        item["liveChatSponsorshipsGiftPurchaseAnnouncementRenderer"];
+      return parseLiveChatSponsorshipsGiftPurchaseAnnouncementRenderer(
+        renderer
+      ) as MembershipGiftPurchaseAction;
+    } else if (
+      "liveChatSponsorshipsGiftRedemptionAnnouncementRenderer" in item
+    ) {
+      // Sponsorships gift purchase announcement
+      const renderer =
+        item["liveChatSponsorshipsGiftRedemptionAnnouncementRenderer"];
+      return parseLiveChatSponsorshipsGiftRedemptionAnnouncementRenderer(
+        renderer
+      );
+    } else if ("liveChatModerationMessageRenderer" in item) {
+      const renderer = item["liveChatModerationMessageRenderer"];
+      return parseLiveChatModerationMessageRenderer(renderer);
+    }
+  })();
+
+  if (!parsedAction) {
+    debugLog(
+      "[action required] Unrecognized chat item renderer type:",
+      JSON.stringify(item)
     );
-  } else if ("liveChatModerationMessageRenderer" in item) {
-    const renderer = item["liveChatModerationMessageRenderer"];
-    return parseLiveChatModerationMessageRenderer(renderer);
+    return toUnknownAction(payload);
   }
 
-  debugLog(
-    "[action required] Unrecognized chat item renderer type:",
-    JSON.stringify(item)
-  );
+  return parsedAction;
 }
 
 // Chat
@@ -116,8 +126,7 @@ export function parseLiveChatTextMessageRenderer(
     renderer.authorPhoto.thumbnails[renderer.authorPhoto.thumbnails.length - 1]
       .url;
 
-  const { isVerified, isOwner, isModerator, membership } =
-    parseBadges(renderer);
+  const badges = parseBadges(renderer);
 
   const contextMenuEndpointParams =
     renderer.contextMenuEndpoint!.liveChatItemContextMenuEndpoint.params;
@@ -141,10 +150,7 @@ export function parseLiveChatTextMessageRenderer(
     authorChannelId,
     authorPhoto,
     message,
-    membership,
-    isVerified,
-    isOwner,
-    isModerator,
+    ...badges,
     contextMenuEndpointParams,
     rawMessage: message, // deprecated
   };
@@ -172,6 +178,7 @@ export function parseLiveChatPaidMessageRenderer(
 
   const message = renderer.message?.runs ?? null;
   const superchat = parseSuperChat(renderer);
+  const badges = parseBadges(renderer);
 
   const parsed: AddSuperChatItemAction = {
     type: "addSuperChatItemAction",
@@ -183,6 +190,7 @@ export function parseLiveChatPaidMessageRenderer(
     authorPhoto,
     message,
     ...superchat,
+    ...badges,
     superchat, // deprecated
     rawMessage: renderer.message?.runs, // deprecated
   };
@@ -191,31 +199,30 @@ export function parseLiveChatPaidMessageRenderer(
 
 // Super Sticker
 export function parseLiveChatPaidStickerRenderer(
-  rdr: YTLiveChatPaidStickerRenderer
+  renderer: YTLiveChatPaidStickerRenderer
 ): AddSuperStickerItemAction {
-  const { timestampUsec, authorExternalChannelId: authorChannelId } = rdr;
+  const { timestampUsec, authorExternalChannelId: authorChannelId } = renderer;
 
   const timestamp = tsToDate(timestampUsec);
 
-  const authorName = stringify(rdr.authorName);
-  const authorPhoto = pickThumbUrl(rdr.authorPhoto);
+  const authorName = stringify(renderer.authorName);
+  const authorPhoto = pickThumbUrl(renderer.authorPhoto);
 
   if (!authorName) {
     debugLog(
       "[action required] empty authorName (super sticker)",
-      JSON.stringify(rdr)
+      JSON.stringify(renderer)
     );
   }
 
-  const stickerUrl = "https:" + pickThumbUrl(rdr.sticker);
-  const stickerText = rdr.sticker.accessibility!.accessibilityData.label;
-  const { amount, currency } = parseAmountText(
-    rdr.purchaseAmountText.simpleText
-  );
+  const stickerUrl = "https:" + pickThumbUrl(renderer.sticker);
+  const stickerText = renderer.sticker.accessibility!.accessibilityData.label;
+  const superchat = parseSuperChat(renderer);
+  const badges = parseBadges(renderer);
 
   const parsed: AddSuperStickerItemAction = {
     type: "addSuperStickerItemAction",
-    id: rdr.id,
+    id: renderer.id,
     timestamp,
     timestampUsec,
     authorName,
@@ -223,14 +230,10 @@ export function parseLiveChatPaidStickerRenderer(
     authorPhoto,
     stickerUrl,
     stickerText,
-    amount,
-    currency,
-    stickerDisplayWidth: rdr.stickerDisplayWidth,
-    stickerDisplayHeight: rdr.stickerDisplayHeight,
-    moneyChipBackgroundColor: parseColorCode(rdr.moneyChipBackgroundColor),
-    moneyChipTextColor: parseColorCode(rdr.moneyChipTextColor),
-    backgroundColor: parseColorCode(rdr.backgroundColor),
-    authorNameTextColor: parseColorCode(rdr.authorNameTextColor),
+    stickerDisplayWidth: renderer.stickerDisplayWidth,
+    stickerDisplayHeight: renderer.stickerDisplayHeight,
+    ...superchat,
+    ...badges,
   };
 
   return parsed;
@@ -249,18 +252,7 @@ export function parseLiveChatMembershipItemRenderer(
   const authorChannelId = renderer.authorExternalChannelId;
   const authorPhoto = pickThumbUrl(renderer.authorPhoto);
 
-  // observed, MODERATOR
-  // observed, undefined renderer.authorBadges
-  const membership = renderer.authorBadges
-    ? parseMembership(renderer.authorBadges[renderer.authorBadges.length - 1])
-    : undefined;
-  if (!membership) {
-    debugLog(
-      `missing membership information while parsing neww membership action: ${JSON.stringify(
-        renderer
-      )}`
-    );
-  }
+  const badges = parseBadges(renderer);
 
   const isMilestoneMessage = "empty" in renderer || "message" in renderer;
 
@@ -287,7 +279,7 @@ export function parseLiveChatMembershipItemRenderer(
       authorName,
       authorChannelId,
       authorPhoto,
-      membership,
+      ...badges,
       level,
       message,
       duration,
@@ -310,7 +302,7 @@ export function parseLiveChatMembershipItemRenderer(
       authorName,
       authorChannelId,
       authorPhoto,
-      membership,
+      ...badges,
       level,
     };
     return parsed;
@@ -326,11 +318,8 @@ export function parseLiveChatViewerEngagementMessageRenderer(
    * POLL: poll result message
    */
 
-  const {
-    id,
-    timestampUsec,
-    icon: { iconType },
-  } = renderer;
+  const { id, timestampUsec, icon } = renderer;
+  const { iconType } = icon ?? {};
   if ("simpleText" in renderer.message) {
     debugLog(
       "[action required] message is simpleText (engagement):",
@@ -383,14 +372,19 @@ export function parseLiveChatViewerEngagementMessageRenderer(
         } else {
           text.pop();
         }
-        return { text, votePercentage };
+        return {
+          text,
+          voteRatio: parseFloat(votePercentage) / 100,
+          votePercentage,
+        };
       });
 
       const parsed: AddPollResultAction = {
         type: "addPollResultAction",
         id,
         question,
-        total,
+        total, // deprecated
+        voteCount: unitsToNumber(total),
         choices,
       };
       return parsed;
@@ -468,6 +462,7 @@ export function parseLiveChatSponsorshipsGiftPurchaseAnnouncementRenderer(
   const channelName = header.primaryText.runs[3].text;
   const amount = parseInt(header.primaryText.runs[1].text, 10);
   const image = header.image.thumbnails[0].url;
+  const badges = parseBadges(header);
 
   if (!authorName) {
     debugLog(
@@ -476,23 +471,13 @@ export function parseLiveChatSponsorshipsGiftPurchaseAnnouncementRenderer(
     );
   }
 
-  const membership = parseMembership(
-    header.authorBadges[header.authorBadges.length - 1]
-  )!;
-
-  if (!membership) {
-    debugLog(
-      "[action required] empty membership (gift purchase)",
-      JSON.stringify(renderer)
-    );
-  }
-
   if (!timestampUsec || !timestamp) {
     const tickerContent: MembershipGiftPurchaseTickerContent = {
+      type: "membershipGiftPurchaseAction",
       id,
       channelName,
       amount,
-      membership,
+      ...badges,
       authorName,
       authorChannelId,
       authorPhoto,
@@ -508,7 +493,7 @@ export function parseLiveChatSponsorshipsGiftPurchaseAnnouncementRenderer(
     timestampUsec,
     channelName,
     amount,
-    membership,
+    ...badges,
     authorName,
     authorChannelId,
     authorPhoto,
@@ -529,6 +514,7 @@ export function parseLiveChatSponsorshipsGiftRedemptionAnnouncementRenderer(
   const authorName = stringify(renderer.authorName);
   const authorPhoto = pickThumbUrl(renderer.authorPhoto);
   const senderName = renderer.message.runs[1].text;
+  const badges = parseBadges(renderer);
 
   if (!authorName) {
     debugLog(
@@ -546,6 +532,7 @@ export function parseLiveChatSponsorshipsGiftRedemptionAnnouncementRenderer(
     authorName,
     authorChannelId,
     authorPhoto,
+    ...badges,
   };
   return parsed;
 }

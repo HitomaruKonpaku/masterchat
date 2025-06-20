@@ -1,10 +1,14 @@
-import { stringify } from "../utils";
-import { YTLiveChatPaidMessageRenderer, YTText } from "../interfaces/yt/chat";
 import {
   SuperChat,
   SUPERCHAT_COLOR_MAP,
   SUPERCHAT_SIGNIFICANCE_MAP,
+  SuperChatColorFields,
 } from "../interfaces/misc";
+import {
+  YTLiveChatPaidMessageRenderer,
+  YTLiveChatPaidStickerRenderer,
+} from "../interfaces/yt/chat";
+import { debugLog, stringify } from "../utils";
 import { parseColorCode } from "./utils";
 
 const AMOUNT_REGEXP = /[\d.,]+/;
@@ -41,29 +45,39 @@ export function parseAmountText(purchaseAmountText: string) {
   return { amount, currency };
 }
 
-export function parseSuperChat(
-  renderer: YTLiveChatPaidMessageRenderer
-): SuperChat {
+export function parseSuperChat<
+  T extends YTLiveChatPaidMessageRenderer | YTLiveChatPaidStickerRenderer
+>(renderer: T): SuperChat<T> {
   const { amount, currency } = parseAmountText(
-    renderer.purchaseAmountText.simpleText
+    stringify(renderer.purchaseAmountText)
   );
 
+  const originalColor =
+    "headerBackgroundColor" in renderer
+      ? renderer.headerBackgroundColor.toString()
+      : renderer.backgroundColor.toString();
   const color =
-    SUPERCHAT_COLOR_MAP[
-      renderer.headerBackgroundColor.toString() as keyof typeof SUPERCHAT_COLOR_MAP
-    ];
+    SUPERCHAT_COLOR_MAP[originalColor as keyof typeof SUPERCHAT_COLOR_MAP];
   const significance = SUPERCHAT_SIGNIFICANCE_MAP[color];
+
+  if (!color) {
+    debugLog(
+      "[action required] Can't find the color:",
+      JSON.stringify(renderer)
+    );
+  }
+
+  const colorFields = Object.fromEntries(
+    Object.entries(renderer)
+      .filter(([key]) => key.endsWith("Color"))
+      .map(([key, value]) => [key, parseColorCode(value)])
+  ) as SuperChatColorFields<T>;
 
   return {
     amount,
     currency,
     color,
     significance,
-    authorNameTextColor: parseColorCode(renderer.authorNameTextColor),
-    timestampColor: parseColorCode(renderer.timestampColor),
-    headerBackgroundColor: parseColorCode(renderer.headerBackgroundColor),
-    headerTextColor: parseColorCode(renderer.headerTextColor),
-    bodyBackgroundColor: parseColorCode(renderer.bodyBackgroundColor),
-    bodyTextColor: parseColorCode(renderer.bodyTextColor),
+    ...colorFields,
   };
 }

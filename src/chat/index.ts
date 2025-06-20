@@ -1,4 +1,4 @@
-import { Action, UnknownAction } from "../interfaces/actions";
+import { Action, ErrorAction, UnknownAction } from "../interfaces/actions";
 import { YTAction } from "../interfaces/yt/chat";
 import { debugLog, omitTrackingParams } from "../utils";
 import { parseAddBannerToLiveChatCommand } from "./actions/addBannerToLiveChatCommand";
@@ -16,62 +16,86 @@ import { parseUpdateLiveChatPollAction } from "./actions/updateLiveChatPollActio
 /**
  * Parse raw action object and returns Action
  */
-export function parseAction(action: YTAction): Action | UnknownAction {
-  const filteredActions = omitTrackingParams(action);
-  const type = Object.keys(filteredActions)[0] as keyof typeof filteredActions;
+export function parseAction(action: YTAction): Action {
+  try {
+    const filteredActions = omitTrackingParams(action);
+    const type = Object.keys(
+      filteredActions
+    )[0] as keyof typeof filteredActions;
 
-  switch (type) {
-    case "addChatItemAction": {
-      const parsed = parseAddChatItemAction(action[type]!);
-      if (parsed) return parsed;
-      break;
+    switch (type) {
+      case "addChatItemAction": {
+        const parsed = parseAddChatItemAction(action[type]!);
+        if (parsed) return parsed;
+        break;
+      }
+
+      case "markChatItemsByAuthorAsDeletedAction":
+        return parseMarkChatItemsByAuthorAsDeletedAction(action[type]!);
+
+      case "markChatItemAsDeletedAction":
+        return parseMarkChatItemAsDeletedAction(action[type]!);
+
+      case "addLiveChatTickerItemAction": {
+        const parsed = parseAddLiveChatTickerItemAction(action[type]!);
+        if (parsed) return parsed;
+        break;
+      }
+
+      case "replaceChatItemAction":
+        return parseReplaceChatItemAction(action[type]!);
+
+      case "addBannerToLiveChatCommand":
+        return parseAddBannerToLiveChatCommand(action[type]!);
+
+      case "removeBannerForLiveChatCommand":
+        return parseRemoveBannerForLiveChatCommand(action[type]!);
+
+      case "showLiveChatTooltipCommand":
+        return parseShowLiveChatTooltipCommand(action[type]!);
+
+      case "showLiveChatActionPanelAction":
+        return parseShowLiveChatActionPanelAction(action[type]!);
+
+      case "updateLiveChatPollAction":
+        return parseUpdateLiveChatPollAction(action[type]!);
+
+      case "closeLiveChatActionPanelAction":
+        return parseCloseLiveChatActionPanelAction(action[type]!);
+
+      default: {
+        debugLog(
+          "[action required] Unrecognized action type:",
+          JSON.stringify(action)
+        );
+      }
     }
 
-    case "markChatItemsByAuthorAsDeletedAction":
-      return parseMarkChatItemsByAuthorAsDeletedAction(action[type]!);
-
-    case "markChatItemAsDeletedAction":
-      return parseMarkChatItemAsDeletedAction(action[type]!);
-
-    case "addLiveChatTickerItemAction": {
-      const parsed = parseAddLiveChatTickerItemAction(action[type]!);
-      if (parsed) return parsed;
-      break;
-    }
-
-    case "replaceChatItemAction":
-      return parseReplaceChatItemAction(action[type]!);
-
-    case "addBannerToLiveChatCommand":
-      return parseAddBannerToLiveChatCommand(action[type]!);
-
-    case "removeBannerForLiveChatCommand":
-      return parseRemoveBannerForLiveChatCommand(action[type]!);
-
-    case "showLiveChatTooltipCommand":
-      return parseShowLiveChatTooltipCommand(action[type]!);
-
-    case "showLiveChatActionPanelAction":
-      const parsed = parseShowLiveChatActionPanelAction(action[type]!);
-      return parsed;
-
-    case "updateLiveChatPollAction":
-      return parseUpdateLiveChatPollAction(action[type]!);
-
-    case "closeLiveChatActionPanelAction":
-      return parseCloseLiveChatActionPanelAction(action[type]!);
-
-    default: {
-      const _: never = type;
-      debugLog(
-        "[action required] Unrecognized action type:",
-        JSON.stringify(action)
-      );
-    }
+    return toUnknownAction(action);
+  } catch (error: any) {
+    debugLog(
+      "[action required] Error occurred while parsing action:",
+      error.message || error,
+      JSON.stringify(action)
+    );
+    return toErrorAction(action, error);
   }
+}
 
+/**
+ * Unknown action used for unexpected payloads. You should implement an appropriate action parser as soon as you discover this action in the production.
+ */
+export function toUnknownAction(payload: unknown): UnknownAction {
   return {
     type: "unknown",
-    payload: action,
-  } as UnknownAction;
+    payload,
+  };
+}
+
+export function toErrorAction(payload: unknown, error: unknown): ErrorAction {
+  return {
+    type: "error",
+    error,
+    payload,
+  };
 }
