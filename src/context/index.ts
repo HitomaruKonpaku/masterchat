@@ -117,7 +117,10 @@ export function parseMetadataFromWatch(html: string) {
 
   try {
     const playabilityStatus = findPlayabilityStatus(html);
-    assertPlayability(playabilityStatus);
+    // even if playabilityStatus missing you can still have chat
+    if (playabilityStatus) {
+      assertPlayability(playabilityStatus);
+    }
   } catch (error) {
     // If members-only video is ended it should be able to get chat normally
     if (!(error instanceof MembersOnlyError && metadata.publication?.endDate)) {
