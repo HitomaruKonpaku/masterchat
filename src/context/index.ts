@@ -20,18 +20,20 @@ function assertPlayability(playabilityStatus: YTPlayabilityStatus | undefined) {
   if (!playabilityStatus) {
     throw new Error("playabilityStatus missing");
   }
+
+  const msg = playabilityStatus.reason || playabilityStatus.messages?.join(" ");
   switch (playabilityStatus.status) {
     case "ERROR":
-      throw new UnavailableError(playabilityStatus.reason!);
+      throw new UnavailableError(msg!);
     case "LOGIN_REQUIRED":
-      throw new NoPermissionError(playabilityStatus.reason!);
+      throw new NoPermissionError(msg!);
     case "UNPLAYABLE": {
       if (
         "playerLegacyDesktopYpcOfferRenderer" in playabilityStatus.errorScreen!
       ) {
-        throw new MembersOnlyError(playabilityStatus.reason!);
+        throw new MembersOnlyError(msg!);
       }
-      throw new NoStreamRecordingError(playabilityStatus.reason!);
+      throw new NoStreamRecordingError(msg!);
     }
     case "LIVE_STREAM_OFFLINE":
     case "OK":
@@ -113,8 +115,15 @@ export function parseMetadataFromWatch(html: string) {
   const metadata = parseVideoMetadataFromHtml(html);
   const initialData = findInitialData(html)!;
 
-  const playabilityStatus = findPlayabilityStatus(html);
-  // assertPlayability(playabilityStatus);
+  try {
+    const playabilityStatus = findPlayabilityStatus(html);
+    assertPlayability(playabilityStatus);
+  } catch (error) {
+    // If members-only video is ended it should be able to get chat normally
+    if (!(error instanceof MembersOnlyError && metadata.publication?.endDate)) {
+      throw error;
+    }
+  }
 
   // TODO: initialData.contents.twoColumnWatchNextResults.conversationBar.conversationBarRenderer.availabilityMessage.messageRenderer.text.runs[0].text === 'Chat is disabled for this live stream.'
   const results =

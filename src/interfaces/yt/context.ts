@@ -23,9 +23,12 @@ export interface YTPlayabilityStatus {
   contextParams: string;
   // if not OK
   reason?: string;
+  messages?: string[];
   errorScreen?: {
     playerErrorMessageRenderer?: {
       reason: YTSimpleTextContainer;
+      subreason?: YTSimpleTextContainer;
+      proceedButton?: YTDismissButtonClass;
       thumbnail: YTThumbnailList;
       icon: YTIcon;
     };
@@ -219,7 +222,7 @@ export interface YTCollapseButtonButtonRenderer {
   isDisabled: boolean;
   accessibility?: YTAccessibilityLabel;
   trackingParams: string;
-  text?: YTRunContainer;
+  text?: Partial<YTSimpleTextContainer & YTRunContainer>;
 }
 
 export interface YTAccessibilityData {
