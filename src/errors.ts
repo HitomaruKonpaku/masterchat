@@ -1,3 +1,5 @@
+import { VideoObject } from "./interfaces";
+
 export type EndReason =
   | "privated" // Privated by streamer
   | "deleted" // Deleted by streamer
@@ -14,12 +16,19 @@ export type ErrorCode =
   | "denied" // Access denied (429)
   | "invalid"; // Invalid request
 
-export class MasterchatError extends Error {
-  public code: ErrorCode;
+export interface MembersOnlyErrorData {
+  channelId?: string;
+  meta?: VideoObject;
+}
 
-  constructor(code: ErrorCode, msg: string) {
+export class MasterchatError<T = any> extends Error {
+  public code: ErrorCode;
+  public data?: T;
+
+  constructor(code: ErrorCode, msg: string, data?: T) {
     super(msg);
     this.code = code;
+    this.data = data;
 
     Object.setPrototypeOf(this, MasterchatError.prototype);
   }
@@ -46,9 +55,9 @@ export class NoPermissionError extends MasterchatError {
   }
 }
 
-export class MembersOnlyError extends MasterchatError {
-  constructor(msg: string) {
-    super("membersOnly", msg);
+export class MembersOnlyError extends MasterchatError<MembersOnlyErrorData> {
+  constructor(msg: string, data?: MembersOnlyErrorData) {
+    super("membersOnly", msg, data);
     Object.setPrototypeOf(this, MembersOnlyError.prototype);
   }
 }

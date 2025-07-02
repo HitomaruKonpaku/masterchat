@@ -16,7 +16,10 @@ import { VideoObject } from "../interfaces/yt/metadata";
 // OK duration=">0" => Archived (replay chat may be available)
 // OK duration="0" => Live (chat may be available)
 // LIVE_STREAM_OFFLINE => Offline (chat may be available)
-function assertPlayability(playabilityStatus: YTPlayabilityStatus | undefined) {
+function assertPlayability(
+  playabilityStatus: YTPlayabilityStatus | undefined,
+  data?: any
+) {
   if (!playabilityStatus) {
     throw new Error("playabilityStatus missing");
   }
@@ -31,7 +34,7 @@ function assertPlayability(playabilityStatus: YTPlayabilityStatus | undefined) {
       if (
         "playerLegacyDesktopYpcOfferRenderer" in playabilityStatus.errorScreen!
       ) {
-        throw new MembersOnlyError(msg!);
+        throw new MembersOnlyError(msg!, data);
       }
       throw new NoStreamRecordingError(msg!);
     }
@@ -115,19 +118,6 @@ export function parseMetadataFromWatch(html: string) {
   const metadata = parseVideoMetadataFromHtml(html);
   const initialData = findInitialData(html)!;
 
-  try {
-    const playabilityStatus = findPlayabilityStatus(html);
-    // even if playabilityStatus missing you can still have chat
-    if (playabilityStatus) {
-      assertPlayability(playabilityStatus);
-    }
-  } catch (error) {
-    // If members-only video is ended it should be able to get chat normally
-    if (!(error instanceof MembersOnlyError && metadata.publication?.endDate)) {
-      throw error;
-    }
-  }
-
   // TODO: initialData.contents.twoColumnWatchNextResults.conversationBar.conversationBarRenderer.availabilityMessage.messageRenderer.text.runs[0].text === 'Chat is disabled for this live stream.'
   const results =
     initialData.contents?.twoColumnWatchNextResults?.results.results!;
@@ -142,6 +132,20 @@ export function parseMetadataFromWatch(html: string) {
   const badges = primaryInfo?.badges || [];
 
   const channelId = videoOwner?.navigationEndpoint?.browseEndpoint?.browseId;
+
+  try {
+    const playabilityStatus = findPlayabilityStatus(html);
+    // even if playabilityStatus missing you can still have chat
+    if (playabilityStatus) {
+      assertPlayability(playabilityStatus, { channelId, meta: metadata });
+    }
+  } catch (error) {
+    // If members-only video is ended it should be able to get chat normally
+    if (!(error instanceof MembersOnlyError && metadata.publication?.endDate)) {
+      throw error;
+    }
+  }
+
   if (!channelId) {
     throw new Error("CHANNEL_ID_NOT_FOUND");
   }
