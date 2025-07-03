@@ -122,10 +122,10 @@ export function parseMetadataFromWatch(html: string) {
   const results =
     initialData.contents?.twoColumnWatchNextResults?.results.results!;
 
-  const primaryInfo = results.contents.find(
+  const primaryInfo = results.contents?.find(
     (v) => v.videoPrimaryInfoRenderer
   )?.videoPrimaryInfoRenderer;
-  const secondaryInfo = results.contents.find(
+  const secondaryInfo = results.contents?.find(
     (v) => v.videoSecondaryInfoRenderer
   )?.videoSecondaryInfoRenderer;
   const videoOwner = secondaryInfo?.owner?.videoOwnerRenderer;
