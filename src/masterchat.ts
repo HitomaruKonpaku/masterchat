@@ -1,6 +1,5 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 import { EventEmitter } from "events";
-import { AsyncIterator } from "iterator-helpers-polyfill";
 import { buildMeta } from "./api";
 import { buildAuthHeaders } from "./auth";
 import { parseAction } from "./chat";
@@ -600,10 +599,10 @@ export class Masterchat extends EventEmitter {
   /**
    * AsyncIterator API
    */
-  public iter(options?: IterateChatOptions): AsyncIterator<Action> {
-    return AsyncIterator.from<ChatResponse>(
-      this.iterate(options)
-    ).flatMap<Action>((action) => action.actions);
+  public async *iter(options?: IterateChatOptions): AsyncIterator<Action> {
+    for await (const response of this.iterate(options)) {
+      yield* response.actions;
+    }
   }
 
   /**
