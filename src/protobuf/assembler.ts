@@ -129,13 +129,21 @@ export function removeMessageParams(
   );
 }
 
-export function timeoutParams(channelId: string, origin: CVPair): string {
+export function timeoutParams(
+  channelId: string,
+  origin: CVPair,
+  timeoutLength: number
+): string {
   return b64e(
     cc([
       ld(1, cvToken(origin)),
-      ld(6, ld(1, truc(channelId))),
-      vt(10, 2),
+      ld(6, [
+        ld(1, truc(channelId)),
+        ld(2, [vt(1, encv(BigInt(timeoutLength)))]),
+      ]),
+      vt(10, 1),
       vt(11, 1),
+      vt(14, 4),
     ]),
     B64Type.B2
   );

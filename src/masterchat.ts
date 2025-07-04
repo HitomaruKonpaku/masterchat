@@ -1,6 +1,5 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 import { EventEmitter } from "events";
-import { AsyncIterator } from "iterator-helpers-polyfill";
 import { buildMeta } from "./api";
 import { buildAuthHeaders } from "./auth";
 import { parseAction } from "./chat";
@@ -600,10 +599,10 @@ export class Masterchat extends EventEmitter {
   /**
    * AsyncIterator API
    */
-  public iter(options?: IterateChatOptions): AsyncIterator<Action> {
-    return AsyncIterator.from<ChatResponse>(
-      this.iterate(options)
-    ).flatMap<Action>((action) => action.actions);
+  public async *iter(options?: IterateChatOptions): AsyncIterator<Action> {
+    for await (const response of this.iterate(options)) {
+      yield* response.actions;
+    }
   }
 
   /**
@@ -996,10 +995,17 @@ export class Masterchat extends EventEmitter {
   }
 
   /**
-   * Put user in timeout for 300 seconds
+   * Put user in timeout for *timeoutLength* seconds (default set to 300 seconds)
    */
-  public async timeout(channelId: string): Promise<void> {
-    const params = timeoutParams(channelId, this.cvPair());
+  public async timeout(
+    channelId: string,
+    timeoutLength: number = 300
+  ): Promise<void> {
+    const params = timeoutParams(
+      channelId,
+      this.cvPair(),
+      Math.min(Math.max(timeoutLength, 10), 86400)
+    );
 
     const res = await this.post<YTActionResponse>(
       Constants.EP_MOD,
