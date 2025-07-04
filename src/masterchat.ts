@@ -996,10 +996,17 @@ export class Masterchat extends EventEmitter {
   }
 
   /**
-   * Put user in timeout for 300 seconds
+   * Put user in timeout for *timeoutLength* seconds (default set to 300 seconds)
    */
-  public async timeout(channelId: string, timeoutLength: number = 300): Promise<void> {
-    const params = timeoutParams(channelId, this.cvPair(), timeoutLength);
+  public async timeout(
+    channelId: string,
+    timeoutLength: number = 300
+  ): Promise<void> {
+    const params = timeoutParams(
+      channelId,
+      this.cvPair(),
+      Math.min(Math.max(timeoutLength, 10), 86400)
+    );
 
     const res = await this.post<YTActionResponse>(
       Constants.EP_MOD,
