@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
 import {
+  BotError,
   MembersOnlyError,
   NoPermissionError,
   NoStreamRecordingError,
@@ -29,6 +30,13 @@ function assertPlayability(
     case "ERROR":
       throw new UnavailableError(msg!);
     case "LOGIN_REQUIRED":
+      if (
+        playabilityStatus.reason === "Sign in to confirm you’re not a bot" ||
+        playabilityStatus.skip?.playabilityErrorSkipConfig
+          ?.skipOnPlayabilityError === false
+      ) {
+        throw new BotError(msg!);
+      }
       throw new NoPermissionError(msg!);
     case "UNPLAYABLE": {
       if (

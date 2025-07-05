@@ -1,5 +1,6 @@
 import {
   UIActions,
+  YTAnyText,
   YTApiEndpointMetadataContainer,
   YTClientMessages,
   YTIcon,
@@ -27,7 +28,7 @@ export interface YTPlayabilityStatus {
   errorScreen?: {
     playerErrorMessageRenderer?: {
       reason: YTSimpleTextContainer;
-      subreason?: YTSimpleTextContainer;
+      subreason?: YTAnyText;
       proceedButton?: YTDismissButtonClass;
       thumbnail: YTThumbnailList;
       icon: YTIcon;
@@ -222,7 +223,7 @@ export interface YTCollapseButtonButtonRenderer {
   isDisabled: boolean;
   accessibility?: YTAccessibilityLabel;
   trackingParams: string;
-  text?: Partial<YTSimpleTextContainer & YTRunContainer>;
+  text?: YTAnyText;
 }
 
 export interface YTAccessibilityData {

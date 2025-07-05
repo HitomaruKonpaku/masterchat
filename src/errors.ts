@@ -11,6 +11,7 @@ export type ErrorCode =
   | "unavailable" // Deleted video OR wrong video id
   | "disabled" // Live chat is disabled
   | "private" // No permission (private)
+  | "bot" // Bot detected
   | "membersOnly" // No permission (members-only)
   | "unarchived" // Live stream recording is not available
   | "denied" // Access denied (429)
@@ -52,6 +53,13 @@ export class NoPermissionError extends MasterchatError {
   constructor(msg: string) {
     super("private", msg);
     Object.setPrototypeOf(this, NoPermissionError.prototype);
+  }
+}
+
+export class BotError extends MasterchatError {
+  constructor(msg: string) {
+    super("bot", msg);
+    Object.setPrototypeOf(this, BotError.prototype);
   }
 }
 

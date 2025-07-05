@@ -13,6 +13,13 @@ import {
 
 export type YTText = YTSimpleTextContainer | YTRunContainer;
 
+/**
+ * Actually same {@link YTText} but better for IntelliSense (?)
+ *
+ * It can have `simpleText` or `runs` not both
+ */
+export type YTAnyText = Partial<YTSimpleTextContainer & YTRunContainer>;
+
 export interface YTSimpleTextContainer {
   simpleText: string;
   accessibility?: YTAccessibilityData;
@@ -560,7 +567,7 @@ export interface YTLiveChatPollRenderer {
   liveChatPollId: string;
   header: {
     pollHeaderRenderer: {
-      pollQuestion?: Partial<YTSimpleTextContainer & YTRunContainer>;
+      pollQuestion?: YTAnyText;
       thumbnail: YTThumbnailList;
       metadataText: YTRunContainer<YTTextRun>;
       liveChatPollType: YTLiveChatPollType;
