@@ -113,7 +113,7 @@ await mc
   .iter()
   .filter((action) => action.type === "addChatItemAction") // only chat events
   .map((chat) => JSON.stringify(chat) + "\n") // convert to JSONL
-  .forEach((jsonl) => appendFile("./chats.jsonl", jsonl)) // append to the file
+  .forEach((jsonl) => appendFile("./chats.jsonl", jsonl)); // append to the file
 ```
 
 ### Chat moderation bot
@@ -248,7 +248,7 @@ const mc = await Masterchat.init("<videoId>", { axiosInstance });
 
 ## Reference
 
-[API Documentation](https://holodata.github.io/masterchat)
+[API Documentation](https://sigvt.github.io/masterchat)
 
 ### Action type
 

@@ -3,7 +3,7 @@
 [![npm](https://badgen.net/npm/v/@hitomaru/masterchat)](https://npmjs.org/package/@hitomaru/masterchat)
 [![npm: total downloads](https://badgen.net/npm/dt/@hitomaru/masterchat)](https://npmjs.org/package/@hitomaru/masterchat)
 [![npm: publish size](https://badgen.net/packagephobia/publish/@hitomaru/masterchat)](https://npmjs.org/package/@hitomaru/masterchat)
-[![typedoc](https://badgen.net/badge/docs/typedoc/purple)](https://holodata.github.io/masterchat/)
+[![typedoc](https://badgen.net/badge/docs/typedoc/purple)](https://sigvt.github.io/masterchat/)
 
 Masterchat is the most powerful library for YouTube Live Chat, supporting parsing 20+ actions, video comments and transcripts, as well as sending messages and moderating chats.
 
