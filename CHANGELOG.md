@@ -1,5 +1,27 @@
 # Changelog
 
+## v1.3.0
+
+### New
+
+- Add `ErrorAction`, `UnknownAction`
+- Add `BotError`
+
+### Improvements
+
+- Update from [stu43005/masterchat](https://github.com/stu43005/masterchat)
+  - Commit: [5e30cf71ee0c9b7739e59cdcf92402f7794b7ee5](https://github.com/stu43005/masterchat/commit/5e30cf71ee0c9b7739e59cdcf92402f7794b7ee5)
+  - `addBannerToLiveChatCommand`
+  - `addChatItemAction`
+- #1 Updated version of timeoutParams() (@FlashlightXi)
+- Update interfaces
+  - `YTAnyText`
+  - `YTPlayabilityStatus`
+- `MembersOnlyError` should have additional data
+- `parseMetadataFromWatch` should handle more edge cases
+  - Chat can be available even when `playabilityStatus` not exist
+  - `MembersOnly` chat should be available when stream ended
+
 ## v1.2.0
 
 ### New
