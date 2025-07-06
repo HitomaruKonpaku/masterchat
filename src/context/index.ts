@@ -140,6 +140,17 @@ export function parseMetadataFromWatch(html: string) {
   const badges = primaryInfo?.badges || [];
 
   const channelId = videoOwner?.navigationEndpoint?.browseEndpoint?.browseId;
+  const channelName =
+    runsToString(videoOwner?.title?.runs || []) || metadata.author?.name;
+  const title = runsToString(primaryInfo?.title?.runs || []) || metadata.name;
+  const isLive = !metadata.publication?.endDate || false;
+  const isUpcoming =
+    primaryInfo?.dateText?.simpleText?.includes("Scheduled for") || false;
+  const isMembersOnly =
+    badges.some(
+      (v) =>
+        v.metadataBadgeRenderer.style === PurpleStyle.BadgeStyleTypeMembersOnly
+    ) || false;
 
   try {
     const playabilityStatus = findPlayabilityStatus(html);
@@ -157,18 +168,6 @@ export function parseMetadataFromWatch(html: string) {
   if (!channelId) {
     throw new Error("CHANNEL_ID_NOT_FOUND");
   }
-
-  const channelName =
-    runsToString(videoOwner?.title?.runs || []) || metadata.author.name;
-  const title = runsToString(primaryInfo?.title?.runs || []) || metadata.name;
-  const isLive = !metadata?.publication?.endDate || false;
-  const isUpcoming =
-    primaryInfo?.dateText?.simpleText?.includes("Scheduled for") || false;
-  const isMembersOnly =
-    badges.some?.(
-      (v) =>
-        v.metadataBadgeRenderer.style === PurpleStyle.BadgeStyleTypeMembersOnly
-    ) ?? false;
 
   return {
     title,
