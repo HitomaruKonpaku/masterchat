@@ -149,8 +149,7 @@ export class Masterchat extends EventEmitter {
   public channelName?: string;
   public title?: string;
   public videoMetadata?: VideoObject;
-
-  private continuations?: YTReloadContinuation[];
+  public continuations?: YTReloadContinuation[];
 
   private axiosInstance: AxiosInstance;
   private listener: ChatListener | null = null;
@@ -693,14 +692,18 @@ export class Masterchat extends EventEmitter {
         continuation = liveReloadContinuation(target, { top: topChat });
       } else if (self.isMembersOnly) {
         // TODO: 2025-12-28: Temp fix for MembersOnly as I have no idea how to update `replayTimedContinuation` for new continuation as YT changed something
-        continuation = self.continuations?.[0]?.reloadContinuationData
-          ?.continuation as string;
+        const item = self.continuations?.find(
+          (v) => v?.reloadContinuationData?.continuation
+        );
+        if (!item) {
+          throw new MembersOnlyError(
+            "Continuation not found. Please retry with credentials",
+            { channelId: self.channelId, meta: self.videoMetadata }
+          );
+        }
+        continuation = item.reloadContinuationData.continuation;
       } else {
         continuation = replayTimedContinuation(target, { top: topChat });
-      }
-
-      if (!continuation) {
-        throw new DisabledChatError("continuation not found");
       }
 
       requestBody = withContext({
