@@ -39,6 +39,9 @@ export interface Credentials {
    */
   DELEGATED_SESSION_ID?: string;
 
+  /**
+   * Value of `SAPISID`
+   */
   "__Secure-1PAPISID"?: string;
   "__Secure-1PSID"?: string;
   "__Secure-1PSIDTS"?: string;

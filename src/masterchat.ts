@@ -25,6 +25,7 @@ import {
   VideoObject,
   YTCommentThreadRenderer,
   YTContinuationItem,
+  YTReloadContinuation,
 } from "./interfaces";
 import {
   Action,
@@ -148,6 +149,8 @@ export class Masterchat extends EventEmitter {
   public channelName?: string;
   public title?: string;
   public videoMetadata?: VideoObject;
+
+  private continuations?: YTReloadContinuation[];
 
   private axiosInstance: AxiosInstance;
   private listener: ChatListener | null = null;
@@ -443,6 +446,7 @@ export class Masterchat extends EventEmitter {
     this.isUpcoming = metadata.isUpcoming;
     this.isMembersOnly = metadata.isMembersOnly;
     this.videoMetadata = metadata.metadata;
+    this.continuations = metadata.continuations;
   }
 
   public async fetchMetadataFromWatch(id: string) {
@@ -677,16 +681,27 @@ export class Masterchat extends EventEmitter {
     let requestUrl: string = "";
     let requestBody;
     let payload: YTChatResponse;
+    let self = this;
 
     function applyNewLiveStatus(isLive: boolean) {
       requestUrl = isLive ? Constants.EP_GLC : Constants.EP_GLCR;
 
-      const continuation =
-        typeof tokenOrOptions === "string"
-          ? tokenOrOptions
-          : isLive
-          ? liveReloadContinuation(target, { top: topChat })
-          : replayTimedContinuation(target, { top: topChat });
+      let continuation: string;
+      if (typeof tokenOrOptions === "string") {
+        continuation = tokenOrOptions;
+      } else if (isLive) {
+        continuation = liveReloadContinuation(target, { top: topChat });
+      } else if (self.isMembersOnly) {
+        // TODO: 2025-12-28: Temp fix for MembersOnly as I have no idea how to update `replayTimedContinuation` for new continuation as YT changed something
+        continuation = self.continuations?.[0]?.reloadContinuationData
+          ?.continuation as string;
+      } else {
+        continuation = replayTimedContinuation(target, { top: topChat });
+      }
+
+      if (!continuation) {
+        throw new DisabledChatError("continuation not found");
+      }
 
       requestBody = withContext({
         continuation,

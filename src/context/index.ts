@@ -152,6 +152,11 @@ export function parseMetadataFromWatch(html: string) {
         v.metadataBadgeRenderer.style === PurpleStyle.BadgeStyleTypeMembersOnly
     ) || false;
 
+  // TODO: 2025-12-28: Force return continuations for init usage since YT change something I have no idea how to fix
+  const continuations =
+    initialData?.contents?.twoColumnWatchNextResults?.conversationBar
+      ?.liveChatRenderer?.continuations || [];
+
   try {
     const playabilityStatus = findPlayabilityStatus(html);
     // even if playabilityStatus missing you can still have chat
@@ -177,6 +182,7 @@ export function parseMetadataFromWatch(html: string) {
     isUpcoming,
     isMembersOnly,
     metadata,
+    continuations,
   };
 }
 
