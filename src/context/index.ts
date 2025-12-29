@@ -152,22 +152,10 @@ export function parseMetadataFromWatch(html: string) {
         v.metadataBadgeRenderer.style === PurpleStyle.BadgeStyleTypeMembersOnly
     ) || false;
 
-  // TODO: 2025-12-28: Force return continuations for init usage since YT change something I have no idea how to fix
-  const continuations =
-    initialData?.contents?.twoColumnWatchNextResults?.conversationBar
-      ?.liveChatRenderer?.continuations || [];
-
-  try {
-    const playabilityStatus = findPlayabilityStatus(html);
-    // even if playabilityStatus missing you can still have chat
-    if (playabilityStatus) {
-      assertPlayability(playabilityStatus, { channelId, meta: metadata });
-    }
-  } catch (error) {
-    // If members-only video is ended it should be able to get chat normally
-    if (!(error instanceof MembersOnlyError && metadata.publication?.endDate)) {
-      throw error;
-    }
+  const playabilityStatus = findPlayabilityStatus(html);
+  // even if playabilityStatus missing you can still have chat
+  if (playabilityStatus) {
+    assertPlayability(playabilityStatus, { channelId, meta: metadata });
   }
 
   if (!channelId) {
@@ -182,7 +170,6 @@ export function parseMetadataFromWatch(html: string) {
     isUpcoming,
     isMembersOnly,
     metadata,
-    continuations,
   };
 }
 

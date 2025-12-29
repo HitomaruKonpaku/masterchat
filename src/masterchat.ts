@@ -25,7 +25,6 @@ import {
   VideoObject,
   YTCommentThreadRenderer,
   YTContinuationItem,
-  YTReloadContinuation,
 } from "./interfaces";
 import {
   Action,
@@ -53,6 +52,7 @@ import {
   liveReloadContinuation,
   pinParams,
   removeMessageParams,
+  replayReloadContinuation,
   replayTimedContinuation,
   sendMessageParams,
   timeoutParams,
@@ -149,7 +149,6 @@ export class Masterchat extends EventEmitter {
   public channelName?: string;
   public title?: string;
   public videoMetadata?: VideoObject;
-  public continuations?: YTReloadContinuation[];
 
   private axiosInstance: AxiosInstance;
   private listener: ChatListener | null = null;
@@ -445,7 +444,6 @@ export class Masterchat extends EventEmitter {
     this.isUpcoming = metadata.isUpcoming;
     this.isMembersOnly = metadata.isMembersOnly;
     this.videoMetadata = metadata.metadata;
-    this.continuations = metadata.continuations;
   }
 
   public async fetchMetadataFromWatch(id: string) {
@@ -682,29 +680,23 @@ export class Masterchat extends EventEmitter {
     let payload: YTChatResponse;
     let self = this;
 
+    function getContinuationValue(isLive: boolean): string {
+      if (typeof tokenOrOptions === "string") {
+        return tokenOrOptions;
+      }
+      if (isLive) {
+        return liveReloadContinuation(target, { top: topChat });
+      }
+      if (self.isMembersOnly) {
+        return replayReloadContinuation(target, { top: topChat });
+      }
+      return replayTimedContinuation(target, { top: topChat });
+    }
+
     function applyNewLiveStatus(isLive: boolean) {
       requestUrl = isLive ? Constants.EP_GLC : Constants.EP_GLCR;
 
-      let continuation: string;
-      if (typeof tokenOrOptions === "string") {
-        continuation = tokenOrOptions;
-      } else if (isLive) {
-        continuation = liveReloadContinuation(target, { top: topChat });
-      } else if (self.isMembersOnly) {
-        // TODO: 2025-12-28: Temp fix for MembersOnly as I have no idea how to update `replayTimedContinuation` for new continuation as YT changed something
-        const item = self.continuations?.find(
-          (v) => v?.reloadContinuationData?.continuation
-        );
-        if (!item) {
-          throw new MembersOnlyError(
-            "Continuation not found. Please retry with credentials",
-            { channelId: self.channelId, meta: self.videoMetadata }
-          );
-        }
-        continuation = item.reloadContinuationData.continuation;
-      } else {
-        continuation = replayTimedContinuation(target, { top: topChat });
-      }
+      const continuation = getContinuationValue(isLive);
 
       requestBody = withContext({
         continuation,
