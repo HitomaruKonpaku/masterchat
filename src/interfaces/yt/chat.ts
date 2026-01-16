@@ -515,7 +515,7 @@ export interface YTLiveChatBannerRenderer {
   header?: YTLiveChatBannerRendererHeader;
   isStackable?: boolean;
   backgroundType?: "LIVE_CHAT_BANNER_BACKGROUND_TYPE_STATIC" | string;
-  bannerType?: YTLiveChatBannerType | string;
+  bannerType: YTLiveChatBannerType | string;
   onCollapseCommand?: YTElementsCommandContainer;
   onExpandCommand?: YTElementsCommandContainer;
 }
@@ -523,6 +523,7 @@ export interface YTLiveChatBannerRenderer {
 export enum YTLiveChatBannerType {
   ChatSummary = "LIVE_CHAT_BANNER_TYPE_CHAT_SUMMARY",
   CallForQuestions = "LIVE_CHAT_BANNER_TYPE_QNA_START",
+  CrossChannelRedirect = "LIVE_CHAT_BANNER_TYPE_CROSS_CHANNEL_REDIRECT",
 }
 
 export interface YTElementsCommandContainer {
@@ -1040,12 +1041,15 @@ export interface YTContextMenuButtonRendererContainer<
   Command = YTLiveChatItemContextMenuEndpointContainer
 > {
   buttonRenderer: {
-    icon: YTIcon;
+    icon?: YTIcon;
     style?: string;
+    size?: string;
+    isDisabled?: boolean;
+    text?: YTRunContainer<YTTextRun>;
+    trackingParams: string;
     command: Command;
     accessibility?: YTAccessibilityLabel;
-    accessibilityData: YTAccessibilityData;
-    trackingParams: string;
+    accessibilityData?: YTAccessibilityData;
   };
 }
 

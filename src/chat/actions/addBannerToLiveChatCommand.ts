@@ -86,9 +86,11 @@ export function parseAddBannerToLiveChatCommand(
         type: "addOutgoingRaidBannerAction",
         actionId,
         targetId,
+        bannerType,
         targetName,
         targetPhoto: photo,
         targetVideoId,
+        bannerMessage: rdr.bannerMessage,
       };
       return payload;
     } else {
@@ -98,8 +100,10 @@ export function parseAddBannerToLiveChatCommand(
         type: "addIncomingRaidBannerAction",
         actionId,
         targetId,
+        bannerType,
         sourceName,
         sourcePhoto: photo,
+        bannerMessage: rdr.bannerMessage,
       };
       return payload;
     }

@@ -7,6 +7,8 @@ import {
   YTLiveChatPollType,
   YTLiveChatPollChoice,
   YTRun,
+  YTTextRun,
+  YTRunContainer,
 } from "./yt/chat";
 
 /**
@@ -262,17 +264,21 @@ export interface AddIncomingRaidBannerAction {
   type: "addIncomingRaidBannerAction";
   actionId: string;
   targetId: string;
+  bannerType: string;
   sourceName: string;
   sourcePhoto: string;
+  bannerMessage: YTRunContainer<YTTextRun>;
 }
 
 export interface AddOutgoingRaidBannerAction {
   type: "addOutgoingRaidBannerAction";
   actionId: string;
   targetId: string;
+  bannerType: string;
   targetName: string;
   targetPhoto: string;
   targetVideoId: string;
+  bannerMessage: YTRunContainer<YTTextRun>;
 }
 
 export interface AddProductBannerAction {
