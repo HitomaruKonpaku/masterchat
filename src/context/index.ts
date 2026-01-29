@@ -155,7 +155,14 @@ export function parseMetadataFromWatch(html: string) {
   const playabilityStatus = findPlayabilityStatus(html);
   // even if playabilityStatus missing you can still have chat
   if (playabilityStatus) {
-    assertPlayability(playabilityStatus, { channelId, meta: metadata });
+    try {
+      assertPlayability(playabilityStatus, { channelId, meta: metadata });
+    } catch (error) {
+      // Even when BotError chat still able to load
+      if (!(error instanceof BotError)) {
+        throw error;
+      }
+    }
   }
 
   if (!channelId) {
