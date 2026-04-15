@@ -94,6 +94,7 @@ export interface FetchChatOptions {
 export type ChatListener = Promise<void>;
 
 export interface Events {
+  payload: (data: YTChatResponse, mc: Masterchat) => void;
   data: (data: ChatResponse, mc: Masterchat) => void;
   actions: (actions: Action[], mc: Masterchat) => void;
   chats: (chats: AddChatItemAction[], mc: Masterchat) => void;
@@ -708,6 +709,7 @@ export class Masterchat extends EventEmitter {
     loop: while (true) {
       try {
         payload = await this.post<YTChatResponse>(requestUrl, requestBody);
+        this.emit("payload", payload, this);
       } catch (err) {
         // handle user cancallation
         if ((err as any)?.message === "canceled") {
