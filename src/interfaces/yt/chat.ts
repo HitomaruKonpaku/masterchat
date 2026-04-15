@@ -150,6 +150,7 @@ export interface YTLiveChatContinuation {
   trackingParams?: string;
   participantsList?: YTParticipantsList;
   popoutMessage?: YTPopoutMessage;
+  emojis?: YTEmoji[];
   clientMessages?: YTClientMessages;
 }
 
