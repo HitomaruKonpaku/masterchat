@@ -2,10 +2,21 @@ import sha1 from "sha1";
 import { DO, SASH, XGAU, XGPID, XO } from "./constants";
 import { Credentials } from "./interfaces";
 
-export function buildAuthHeaders(creds: Credentials): Record<string, string> {
+export function buildBaseHeaders(
+  cookies?: Record<string, string>
+): Record<string, string> {
+  return {
+    Cookie: genCookieString(cookies),
+  };
+}
+
+export function buildAuthHeaders(
+  creds: Credentials,
+  cookies?: Record<string, string>
+): Record<string, string> {
   const dsid = creds.DELEGATED_SESSION_ID ?? creds.SESSION_ID;
   return {
-    Cookie: genCookieString(creds),
+    Cookie: genCookieString({ ...creds, ...cookies }),
     Authorization: genAuthToken(creds.SAPISID, DO),
     [XO]: DO,
     [XGAU]: "0",
@@ -13,10 +24,12 @@ export function buildAuthHeaders(creds: Credentials): Record<string, string> {
   };
 }
 
-function genCookieString(creds: Credentials) {
-  return Object.entries(creds)
-    .map(([key, value]) => `${key}=${value};`)
-    .join(" ");
+function genCookieString(cookies?: Record<string, string>) {
+  return (
+    Object.entries(cookies || {})
+      .map(([key, value]) => `${key}=${value};`)
+      .join(" ") || ""
+  );
 }
 
 function genAuthToken(sid: string, origin: string): string {

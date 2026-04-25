@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 import { EventEmitter } from "events";
 import { buildMeta } from "./api";
-import { buildAuthHeaders } from "./auth";
+import { buildAuthHeaders, buildBaseHeaders } from "./auth";
 import { parseAction } from "./chat";
 import { parseMarkChatItemAsDeletedAction } from "./chat/actions/markChatItemAsDeletedAction";
 import { pickThumbUrl } from "./chat/utils";
@@ -119,6 +119,8 @@ export interface MasterchatOptions {
   /** you can grab Credentials using `extra/credential-fetcher` */
   credentials?: Credentials | string;
 
+  cookies?: Record<string, string> | string;
+
   /** set live chat mode
    *
    * ```
@@ -156,6 +158,7 @@ export class Masterchat extends EventEmitter {
   private listenerAbortion: AbortController = new AbortController();
 
   protected credentials?: Credentials;
+  protected cookies?: Record<string, string>;
 
   /*
    * Private API
@@ -209,7 +212,9 @@ export class Masterchat extends EventEmitter {
     const headers = {
       "Content-Type": "application/json",
       ...Constants.DH,
-      ...(this.credentials && buildAuthHeaders(this.credentials)),
+      ...(this.credentials
+        ? buildAuthHeaders(this.credentials, this.cookies)
+        : buildBaseHeaders(this.cookies)),
       ...config.headers,
     };
 
@@ -235,7 +240,9 @@ export class Masterchat extends EventEmitter {
 
     const headers = {
       ...Constants.DH,
-      ...(this.credentials && buildAuthHeaders(this.credentials)),
+      ...(this.credentials
+        ? buildAuthHeaders(this.credentials, this.cookies)
+        : buildBaseHeaders(this.cookies)),
       ...config.headers,
     };
 
@@ -415,7 +422,7 @@ export class Masterchat extends EventEmitter {
   constructor(
     videoId: string,
     channelId: string,
-    { mode, credentials, axiosInstance }: MasterchatOptions = {}
+    { mode, credentials, cookies, axiosInstance }: MasterchatOptions = {}
   ) {
     super();
     this.videoId = videoId;
@@ -430,6 +437,7 @@ export class Masterchat extends EventEmitter {
       });
 
     this.setCredentials(credentials);
+    this.setCookies(cookies);
   }
 
   /**
@@ -453,8 +461,10 @@ export class Masterchat extends EventEmitter {
       return parseMetadataFromWatch(html);
     } catch (err) {
       // Check ban status
-      if ((err as AxiosError).code === "429") {
-        throw new AccessDeniedError("Rate limit exceeded: " + this.videoId);
+      if (err instanceof AxiosError) {
+        if (err.response?.status === 429 || err.code === "429") {
+          throw new AccessDeniedError("Rate limit exceeded: " + this.videoId);
+        }
       }
       throw err;
     }
@@ -494,6 +504,19 @@ export class Masterchat extends EventEmitter {
     }
 
     this.credentials = credentials;
+  }
+
+  public setCookies(cookies?: Record<string, string> | string): void {
+    if (typeof cookies === "string") {
+      this.cookies = cookies.split(/;\s/g).reduce((obj, str) => {
+        const [key, value] = str.trim().split(/=/);
+        Object.assign(obj, { [key]: value });
+        return obj;
+      }, {});
+      return;
+    }
+
+    this.cookies = cookies;
   }
 
   /**
