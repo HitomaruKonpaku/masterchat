@@ -116,9 +116,14 @@ export interface Masterchat {
 }
 
 export interface MasterchatOptions {
-  /** you can grab Credentials using `extra/credential-fetcher` */
+  /**
+   * you can grab Credentials using `extra/credential-fetcher`
+   */
   credentials?: Credentials | string;
 
+  /**
+   * some common cookies like `VISITOR_INFO1_LIVE`
+   */
   cookies?: Record<string, string> | string;
 
   /** set live chat mode
