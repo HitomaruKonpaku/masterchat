@@ -9,6 +9,9 @@ import {
 import { runsToString } from "../utils";
 import {
   PurpleStyle,
+  VideoOwnerRenderer,
+  VideoPrimaryInfoRenderer,
+  VideoSecondaryInfoRenderer,
   YTInitialData,
   YTPlayabilityStatus,
 } from "../interfaces/yt/context";
@@ -76,12 +79,49 @@ export function findEPR(data: string) {
   return findCfg(data)?.PLAYER_VARS?.embedded_player_response;
 }
 
+export function findChannelId(data?: VideoOwnerRenderer) {
+  const navigationEndpoint = data?.navigationEndpoint;
+  const browseEndpoint =
+    navigationEndpoint?.showDialogCommand?.panelLoadingStrategy?.inlineContent
+      ?.dialogViewModel?.customContent?.listViewModel?.listItems?.[0]
+      ?.listItemViewModel?.title?.commandRuns?.[0]?.onTap?.innertubeCommand
+      ?.browseEndpoint || navigationEndpoint?.browseEndpoint;
+  const value = browseEndpoint?.browseId;
+  return value;
+}
+
+export function findChannelName(data?: VideoOwnerRenderer) {
+  const navigationEndpoint = data?.navigationEndpoint;
+  const value =
+    navigationEndpoint?.showDialogCommand?.panelLoadingStrategy?.inlineContent
+      ?.dialogViewModel?.customContent?.listViewModel?.listItems?.[0]
+      ?.listItemViewModel?.title?.content ||
+    runsToString(data?.title?.runs || []);
+  return value;
+}
+
 export function findPlayabilityStatus(
   data: string
 ): YTPlayabilityStatus | undefined {
   const ipr = findIPR(data);
   return (ipr as any)?.playabilityStatus;
 }
+
+export function parseIsUpcoming(data?: VideoPrimaryInfoRenderer): boolean {
+  const text = data?.dateText?.simpleText || "";
+  const value = text.includes("Scheduled for") || text.includes("Premieres");
+  return value;
+}
+
+export function parseIsMembersOnly(data?: VideoPrimaryInfoRenderer): boolean {
+  const badges = data?.badges || [];
+  const value = badges.some(
+    (v) =>
+      v.metadataBadgeRenderer.style === PurpleStyle.BadgeStyleTypeMembersOnly
+  );
+  return value;
+}
+
 // embed disabled https://www.youtube.com/embed/JfJYHfrOGgQ
 // unavailable video https://www.youtube.com/embed/YEAINgb2xfo
 // private video https://www.youtube.com/embed/UUjdYGda4N4
@@ -136,21 +176,15 @@ export function parseMetadataFromWatch(html: string) {
   const secondaryInfo = results.contents?.find(
     (v) => v.videoSecondaryInfoRenderer
   )?.videoSecondaryInfoRenderer;
-  const videoOwner = secondaryInfo?.owner?.videoOwnerRenderer;
-  const badges = primaryInfo?.badges || [];
 
-  const channelId = videoOwner?.navigationEndpoint?.browseEndpoint?.browseId;
-  const channelName =
-    runsToString(videoOwner?.title?.runs || []) || metadata.author?.name;
+  const videoOwner = secondaryInfo?.owner?.videoOwnerRenderer;
+
+  const channelId = findChannelId(videoOwner);
+  const channelName = findChannelName(videoOwner) || metadata.author?.name;
   const title = runsToString(primaryInfo?.title?.runs || []) || metadata.name;
   const isLive = !metadata.publication?.endDate || false;
-  const isUpcoming =
-    primaryInfo?.dateText?.simpleText?.includes("Scheduled for") || false;
-  const isMembersOnly =
-    badges.some(
-      (v) =>
-        v.metadataBadgeRenderer.style === PurpleStyle.BadgeStyleTypeMembersOnly
-    ) || false;
+  const isUpcoming = parseIsUpcoming(primaryInfo);
+  const isMembersOnly = parseIsMembersOnly(primaryInfo);
 
   const playabilityStatus = findPlayabilityStatus(html);
   // even if playabilityStatus missing you can still have chat
@@ -179,6 +213,8 @@ export function parseMetadataFromWatch(html: string) {
     metadata,
   };
 }
+
+//#region metadata
 
 /**
  * @see http://schema.org/VideoObject
@@ -237,3 +273,5 @@ function parseVideoMetaValueByKey(key: string, value: string) {
   }
   return value;
 }
+
+//#endregion
