@@ -193,9 +193,8 @@ export function parseMetadataFromWatch(html: string) {
       assertPlayability(playabilityStatus, { channelId, meta: metadata });
     } catch (error) {
       const byPass =
-        false ||
         error instanceof BotError ||
-        (error instanceof NoStreamRecordingError && (isLive || isUpcoming));
+        (error instanceof NoStreamRecordingError && channelId);
       if (!byPass) {
         throw error;
       }
