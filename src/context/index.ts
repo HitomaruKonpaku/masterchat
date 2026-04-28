@@ -192,8 +192,11 @@ export function parseMetadataFromWatch(html: string) {
     try {
       assertPlayability(playabilityStatus, { channelId, meta: metadata });
     } catch (error) {
-      // Even when BotError chat still able to load
-      if (!(error instanceof BotError)) {
+      const byPass =
+        false ||
+        error instanceof BotError ||
+        (error instanceof NoStreamRecordingError && (isLive || isUpcoming));
+      if (!byPass) {
         throw error;
       }
     }
