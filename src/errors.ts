@@ -19,7 +19,15 @@ export type ErrorCode =
 
 export interface MembersOnlyErrorData {
   channelId?: string;
-  meta?: VideoObject;
+  data?: {
+    title?: string;
+    channelId?: string;
+    channelName?: string;
+    isLive?: boolean;
+    isUpcoming?: boolean;
+    isMembersOnly?: boolean;
+    metadata?: VideoObject;
+  };
 }
 
 export class MasterchatError<T = any> extends Error {
