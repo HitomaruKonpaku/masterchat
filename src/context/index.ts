@@ -186,11 +186,25 @@ export function parseMetadataFromWatch(html: string) {
   const isUpcoming = parseIsUpcoming(primaryInfo);
   const isMembersOnly = parseIsMembersOnly(primaryInfo);
 
+  if (!channelId) {
+    throw new Error("CHANNEL_ID_NOT_FOUND");
+  }
+
+  const data = {
+    title,
+    channelId,
+    channelName,
+    isLive,
+    isUpcoming,
+    isMembersOnly,
+    metadata,
+  };
+
   const playabilityStatus = findPlayabilityStatus(html);
   // even if playabilityStatus missing you can still have chat
   if (playabilityStatus) {
     try {
-      assertPlayability(playabilityStatus, { channelId, meta: metadata });
+      assertPlayability(playabilityStatus, { channelId, data });
     } catch (error) {
       const byPass =
         error instanceof BotError ||
@@ -201,19 +215,7 @@ export function parseMetadataFromWatch(html: string) {
     }
   }
 
-  if (!channelId) {
-    throw new Error("CHANNEL_ID_NOT_FOUND");
-  }
-
-  return {
-    title,
-    channelId,
-    channelName,
-    isLive,
-    isUpcoming,
-    isMembersOnly,
-    metadata,
-  };
+  return data;
 }
 
 //#region metadata

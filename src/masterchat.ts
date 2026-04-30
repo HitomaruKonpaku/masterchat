@@ -569,7 +569,9 @@ export class Masterchat extends EventEmitter {
         this.emit("end", null);
       })
       .catch((err) => {
-        if (err instanceof AbortError) return;
+        if (err instanceof AbortError) {
+          return;
+        }
 
         // special treatment for unrecoverable unavailable/private errors
         // emit 'end' only if ->
