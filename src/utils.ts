@@ -273,12 +273,17 @@ export function groupBy<T, K extends keyof T, S extends Extract<T[K], string>>(
   }, {} as { [k in S]: (T extends { [s in K]: k } ? T : never)[] });
 }
 
-export function withContext(input: any = {}) {
+export function withContext(
+  input: Record<string, any> = {},
+  config?: { clientVersion?: string }
+) {
+  const client = DC;
+  client.clientVersion = config?.clientVersion || client.clientVersion;
   return {
     ...input,
     context: {
       ...input?.context,
-      client: DC,
+      client,
     },
   };
 }
