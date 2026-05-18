@@ -160,11 +160,11 @@ export class Masterchat extends EventEmitter {
   public title?: string;
   public videoMetadata?: VideoObject;
 
-  private clientVersion?: string;
   private axiosInstance: AxiosInstance;
   private listener: ChatListener | null = null;
   private listenerAbortion: AbortController = new AbortController();
 
+  protected clientVersion?: string;
   protected credentials?: Credentials;
   protected cookies?: Record<string, string>;
 
